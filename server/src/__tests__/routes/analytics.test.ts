@@ -99,6 +99,8 @@ describe('Analytics API', () => {
 
     expect(status).toBe(200);
     expect(body.estimatedCostSavings).toBe(2.6);
+    // Drives the client's span-based 30-day projection
+    expect(body.firstRequestAt).toBe('2026-05-29 11:00:00');
   });
 
   it('falls back to modest default pricing for unmapped models', async () => {

@@ -42,6 +42,7 @@ analyticsRouter.get('/summary', (req: Request, res: Response) => {
       SUM(r.input_tokens) as total_input_tokens,
       SUM(r.output_tokens) as total_output_tokens,
       AVG(r.latency_ms) as avg_latency_ms,
+      MIN(r.created_at) as first_request_at,
       SUM(CASE WHEN r.status = 'success' THEN
         r.input_tokens  * COALESCE(m.paid_input_per_m,  ?) / 1000000.0 +
         r.output_tokens * COALESCE(m.paid_output_per_m, ?) / 1000000.0
@@ -61,6 +62,9 @@ analyticsRouter.get('/summary', (req: Request, res: Response) => {
     totalOutputTokens: stats.total_output_tokens ?? 0,
     avgLatencyMs: Math.round(stats.avg_latency_ms ?? 0),
     estimatedCostSavings: Math.round((stats.est_savings ?? 0) * 100) / 100,
+    // Lets the client project savings from the ACTUAL data span (a 2-day-old
+    // install shouldn't extrapolate as if the whole range had traffic).
+    firstRequestAt: stats.first_request_at ?? null,
   });
 });
 

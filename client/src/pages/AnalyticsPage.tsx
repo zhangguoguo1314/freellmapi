@@ -81,16 +81,26 @@ export default function AnalyticsPage() {
     queryFn: () => apiFetch<{ byCategory: any[]; byPlatform: any[]; detailed: any[] }>(`/api/analytics/error-distribution?range=${range}`),
   })
 
-  // Savings display as a monthly figure: shorter ranges extrapolate to 30
-  // days (24h ×30, 7d ×30/7); the 30d range shows the real number as-is.
-  // The hover hint always carries the actual period amount.
+  // Savings display as a monthly figure projected from the ACTUAL data
+  // span in the selected range (not the range length, which over-divides
+  // young installs and zeroes quiet days). Once the span reaches 30 days
+  // the real number shows as-is. The hover hint carries the whole story.
   const actualSavings = summary?.estimatedCostSavings ?? 0
-  const savingsFactor = range === '24h' ? 30 : range === '7d' ? 30 / 7 : 1
-  const savings30d = actualSavings * savingsFactor
-  const savingsHint =
-    range === '30d'
-      ? `Your actual savings over the last 30 days: $${actualSavings.toFixed(2)} — what the same tokens would have cost on paid APIs, priced per model. Not extrapolated.`
-      : `You actually saved $${actualSavings.toFixed(2)} over the last ${range === '24h' ? '24 hours' : '7 days'} — what the same tokens would have cost on paid APIs, priced per model. The number shown projects that pace over 30 days.`
+  const rangeDays = range === '24h' ? 1 : range === '7d' ? 7 : 30
+  const spanDays = (() => {
+    if (!summary?.firstRequestAt) return rangeDays
+    // SQLite stores UTC "YYYY-MM-DD HH:MM:SS"
+    const first = new Date(summary.firstRequestAt.replace(' ', 'T') + 'Z').getTime()
+    const days = (Date.now() - first) / 86_400_000
+    // Clamp: at least an hour of pace, at most the range itself
+    return Math.min(Math.max(days, 1 / 24), rangeDays)
+  })()
+  const extrapolated = spanDays < 30
+  const savings30d = extrapolated ? actualSavings * (30 / spanDays) : actualSavings
+  const spanLabel = spanDays >= 2 ? `${Math.round(spanDays)} days` : `${Math.max(1, Math.round(spanDays * 24))} hours`
+  const savingsHint = extrapolated
+    ? `You actually saved $${actualSavings.toFixed(2)} over the ${spanLabel} of data in this view. That is what the same tokens would have cost on paid APIs, priced per model. The number shown projects this pace over 30 days.`
+    : `Your actual savings over the last 30 days: $${actualSavings.toFixed(2)}. That is what the same tokens would have cost on paid APIs, priced per model. Not extrapolated.`
 
   return (
     <div>
