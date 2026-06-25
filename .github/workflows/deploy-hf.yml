@@ -1,0 +1,45 @@
+name: Deploy to HuggingFace Spaces
+
+# 当推送到 main 分支时，自动同步代码到 HuggingFace Spaces Docker Space
+# 需要在 GitHub 仓库 Settings → Secrets and variables → Actions 中添加：
+#   HF_TOKEN: HuggingFace Access Token（需要 write 权限）
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: 准备 HF 专用文件
+        run: |
+          # 用 HuggingFace 专用的 README 替换根目录 README（含 YAML frontmatter）
+          cp huggingface/README.md README.md
+          # 用 HuggingFace 专用的 Dockerfile 替换（端口 7860、UID 1000）
+          cp Dockerfile.hf Dockerfile
+
+      - name: 推送到 HuggingFace Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # ============================================
+          # 修改下面的 HF_SPACE_NAME 为你的 Space 名称
+          # ============================================
+          HF_SPACE_NAME="freellmapi"
+          HF_USER="${{ github.repository_owner }}"
+          
+          echo "推送代码到: https://huggingface.co/spaces/${HF_USER}/${HF_SPACE_NAME}"
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 添加 HF 远程仓库
+          git remote add hf "https://${HF_USER}:${HF_TOKEN}@huggingface.co/spaces/${HF_USER}/${HF_SPACE_NAME}.git" || \
+          git remote set-url hf "https://${HF_USER}:${HF_TOKEN}@huggingface.co/spaces/${HF_USER}/${HF_SPACE_NAME}.git"
+          
+          # 推送到 HF Space（强制推送确保同步）
+          git push hf main --force
