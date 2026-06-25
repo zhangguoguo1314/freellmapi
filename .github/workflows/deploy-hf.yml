@@ -30,7 +30,7 @@ jobs:
           # 修改下面的 HF_SPACE_NAME 为你的 Space 名称
           # ============================================
           HF_SPACE_NAME="freellmapi"
-          HF_USER="${{ github.repository_owner }}"
+          HF_USER="libai003"
           
           echo "推送代码到: https://huggingface.co/spaces/${HF_USER}/${HF_SPACE_NAME}"
           
