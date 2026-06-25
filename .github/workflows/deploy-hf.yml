@@ -22,31 +22,31 @@ jobs:
           # 用 HuggingFace 专用的 Dockerfile 替换（端口 7860、UID 1000）
           cp Dockerfile.hf Dockerfile
 
+      - name: 安装 huggingface_hub
+        run: pip install huggingface_hub --break-system-packages
+
       - name: 推送到 HuggingFace Spaces
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USER: libai003
+          HF_SPACE_NAME: freellmapi
         run: |
-          # ============================================
-          # 修改下面的 HF_SPACE_NAME 为你的 Space 名称
-          # ============================================
-          HF_SPACE_NAME="freellmapi"
-          HF_USER="libai003"
+          python3 << 'EOF'
+          from huggingface_hub import HfApi
+          import os
+
+          api = HfApi()
+          repo_id = f"{os.environ['HF_USER']}/{os.environ['HF_SPACE_NAME']}"
           
-          echo "推送代码到: https://huggingface.co/spaces/${HF_USER}/${HF_SPACE_NAME}"
+          # 上传整个仓库目录到 HF Space
+          # .gitattributes 和 .git/ 会被自动跳过
+          api.upload_folder(
+              folder_path=".",
+              repo_id=repo_id,
+              repo_type="space",
+              token=os.environ["HF_TOKEN"],
+              commit_message="自动部署: 从 GitHub 同步",
+          )
           
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # 完全禁用 Git LFS（避免 HF 服务端 lfs-check 钩子错误）
-          git config --global filter.lfs.smudge "cat"
-          git config --global filter.lfs.clean "cat"
-          git config --global filter.lfs.process ""
-          git config --global lfs.usebuiltin false
-          git lfs uninstall 2>/dev/null || true
-          
-          # 添加 HF 远程仓库（Token 在 URL 中认证）
-          git remote add hf "https://${HF_USER}:${HF_TOKEN}@huggingface.co/spaces/${HF_USER}/${HF_SPACE_NAME}.git" || \
-          git remote set-url hf "https://${HF_USER}:${HF_TOKEN}@huggingface.co/spaces/${HF_USER}/${HF_SPACE_NAME}.git"
-          
-          # 推送到 HF Space
-          git push hf main --force
+          print(f"✅ 成功推送到 {repo_id}")
+          EOF
