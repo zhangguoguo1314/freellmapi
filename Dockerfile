@@ -5,10 +5,10 @@ ARG NODE_IMAGE=node:20-bookworm-slim
 FROM ${NODE_IMAGE} AS deps
 WORKDIR /app
 
-# better-sqlite3 is a native module; on slim images without a usable prebuilt
-# binary (notably the linux/arm64 leg under QEMU) it compiles from source via
-# node-gyp, which needs Python + a C++ toolchain. These live only in the build
-# stages — the runtime image copies the already-compiled node_modules.
+# better-sqlite3 是一个原生模块；在没有可用预编译二进制文件的 slim 镜像上
+# （尤其是 QEMU 下的 linux/arm64 架构），它会通过 node-gyp 从源码编译，
+# 这需要 Python 和 C++ 工具链。这些依赖仅存在于构建阶段——
+# 运行时镜像会复制已编译好的 node_modules。
 RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ \
   && rm -rf /var/lib/apt/lists/*

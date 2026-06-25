@@ -1,49 +1,49 @@
-# Contributing
+# 贡献指南
 
-Contributors are very welcome. This project is a local-first aggregator for free LLM API tiers, so most contributions fall into a few buckets: adding a provider, adding an endpoint, improving the router, polishing the dashboard, or fixing bugs. The README has a "Good first PRs" list if you want a starting point.
+非常欢迎贡献者。本项目是一个面向免费 LLM API 层级的本地优先聚合器，因此大多数贡献属于以下几个方向：添加供应商、添加端点、改进路由器、完善仪表盘或修复 Bug。README 中有"适合新手的 PR"列表，可以作为起点。
 
-## Development loop
+## 开发流程
 
 ```bash
 npm install
-npm run dev      # server on :3001, dashboard on :5173, both with HMR
-npm test         # server vitest; also runs client tests if present
-npm run build    # compile server and dashboard
+npm run dev      # 服务端运行在 :3001，仪表盘运行在 :5173，均支持 HMR
+npm test         # 运行服务端 vitest；如果客户端存在测试也会一并运行
+npm run build    # 编译服务端和仪表盘
 ```
 
-Every PR should:
+每个 PR 应该：
 
-- Include a test, and keep the existing suite green (`npm test`).
-- Match the `.editorconfig` and tsconfig defaults already in the repo.
-- Stay scoped to one change. Smaller PRs get reviewed and merged faster.
-- Avoid adding paid or card-gated services. This catalog only lists tiers that are genuinely free to start using without a credit card.
+- 包含测试，并保持现有测试套件全部通过（`npm test`）。
+- 符合仓库中已有的 `.editorconfig` 和 tsconfig 默认配置。
+- 保持改动范围聚焦。较小的 PR 更容易审核和合并。
+- 避免添加付费或需要绑定信用卡的服务。本目录仅列出真正免费且无需信用卡即可开始使用的层级。
 
-## AI and LLM-assisted contributions
+## AI 和 LLM 辅助贡献
 
-LLM-assisted PRs are welcome. A lot of this codebase is itself built that way, so there is no stigma here. The bar is the same as for any other PR: you are responsible for what you submit.
+欢迎 LLM 辅助的 PR。本代码库本身就有大量代码是这样构建的，因此这里没有任何偏见。标准与其他 PR 一致：你需要对自己提交的内容负责。
 
-That means:
+这意味着：
 
-- **Understand your own diff.** If a reviewer asks why a line is there, you should be able to answer. Do not open a PR you cannot explain.
-- **Test it for real.** Run the code, not just the prompt. Generated tests that do not actually exercise the change, or that pass against a mock of the wrong shape, are worse than no tests.
-- **Keep it scoped.** Tools love to "helpfully" reformat unrelated files, rename things, or rewrite comments. Strip that out before opening the PR so the diff is only the change you intend.
-- **No invented facts.** Provider rate limits, model ids, and endpoints must be verified against the provider, not recalled by a model. A wrong rate limit in the catalog is a bug that ships to everyone.
-- **Disclose nothing special required.** You do not need to label a PR as AI-assisted. We care about the result, not the keystrokes.
+- **理解你自己的 diff。** 如果审核者询问某行代码为何存在，你应该能够回答。不要提交你无法解释的 PR。
+- **实际运行测试。** 运行代码，而不仅仅是运行提示词。未真正执行变更的生成测试，或针对错误 mock 形状通过的测试，比没有测试更糟糕。
+- **保持范围聚焦。** AI 工具喜欢"热心地"重新格式化无关文件、重命名内容或重写注释。在提交 PR 之前请清除这些改动，确保 diff 仅包含你预期的变更。
+- **不得编造事实。** 供应商速率限制、模型 ID 和端点必须根据供应商进行验证，而不是由模型回忆。目录中错误的速率限制是一个会影响所有人的 Bug。
+- **无需特别声明。** 你不需要将 PR 标记为 AI 辅助。我们关注的是结果，而不是按键操作。
 
-PRs that are clearly unreviewed model output (broad unexplained diffs, fabricated limits, tests that do not run) will be asked for changes or closed.
+明显未经审核的模型输出 PR（大范围未解释的 diff、编造的限制、未运行的测试）将被要求修改或直接关闭。
 
-## Reporting issues
+## 问题报告
 
-Bug reports are most useful with: your version (or commit), the provider involved, and the exact request and response where you can share them. For verification or routing bugs, the server logs around the failing request help a lot.
+Bug 报告最有用的信息包括：你的版本（或 commit）、涉及的供应商，以及你能分享的确切请求和响应。对于验证或路由 Bug，失败请求附近的服务端日志非常有帮助。
 
-## Related community work
+## 相关社区贡献
 
-Some useful fixes and experiments live in community forks and branches. If you are looking for prior art before starting, these are worth a read:
+一些有用的修复和实验性功能位于社区 fork 和分支中。如果你在开始之前想寻找参考，以下内容值得一读：
 
-- `fix-loopback-only` — restrict admin API access to localhost to avoid external exposure.
-- `fix-35-admin-security` — optional `ADMIN_PASSWORD` HMAC auth for remote admin API access.
-- `fix-101-markdown` — Markdown rendering in the Playground UI.
-- `fix-119-atomic-ratelimits` — atomic SQLite `BEGIN IMMEDIATE` transactions to fix rate-limit race conditions.
-- `feature-122-auto-routing` — per-request `smart` / `fast` / `cheap` routing strategies.
+- `fix-loopback-only` — 限制管理 API 访问仅限 localhost，避免外部暴露。
+- `fix-35-admin-security` — 可选的 `ADMIN_PASSWORD` HMAC 认证，用于远程管理 API 访问。
+- `fix-101-markdown` — Playground UI 中的 Markdown 渲染。
+- `fix-119-atomic-ratelimits` — 使用原子性 SQLite `BEGIN IMMEDIATE` 事务修复速率限制竞态条件。
+- `feature-122-auto-routing` — 每请求 `smart` / `fast` / `cheap` 路由策略。
 
-If you port one of these into a PR, credit the original author in the PR description so they land in the Contributors list.
+如果你将这些功能移植到 PR 中，请在 PR 描述中注明原作者，以便他们出现在贡献者列表中。
